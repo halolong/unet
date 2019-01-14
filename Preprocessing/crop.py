@@ -5,17 +5,18 @@ from PIL import Image
 import os
 
 
-# return file path of dir
+# return file path of dir and file name list
 def getfile(file_dir):
     path = ''
-
+    file_list = []
     for root, dirs, files in os.walk(file_dir):
-        file_list = []
         for file in files:
+            # get the `postfix`
             # print(os.path.splitext(file)[1])
             filename = os.path.splitext(file)
             # print(filename)
             file_list.append(filename[0] + filename[1])
+            # !!! need to change the .xxx
             if os.path.splitext(file)[1] == '.tif':
                 path = os.path.join(root)
     # print(file_list)
@@ -38,7 +39,9 @@ def crop(file_path, crop_size, col_step, row_step, out_path, identity, flag=''):
             col = col + 1
             # 横纵坐标需要好好分清
             region = img.crop((j, i, j + crop_size, i + crop_size))
-            region.save(out_path + '%d_%d_%s.tif' % (identity, pic_sum, flag))
+            region.save(out_path + '%d.tif' % pic_sum)
+            # region.save(out_path + '%d_%d_%s.tif' % (identity, pic_sum, flag))
+
             print('图片%d_%d.jpeg剪裁成功' % (row, col))
             pic_sum = pic_sum + 1
         col = 0
@@ -49,13 +52,16 @@ def get_sort(string):
     return sorted(string, key=str.lower)
 
 
-info = getfile('/home/xingyu/Desktop/InriaDataset/AerialImageDataset/train/images')
-origin_root = info[0]
-mask_root = '/home/xingyu/Desktop/InriaDataset/AerialImageDataset/train/gt'
+# method: root + filename
+info = getfile('/home/xingyu/Desktop/pics/tif')
+root = info[0]
+
+# mask_root = '/home/xingyu/Desktop/InriaDataset/AerialImageDataset/train/gt'
 name = info[1]
+# print(name)
 sort_name = get_sort(name)
 
 for i in range(len(sort_name)):
     print(sort_name[i])
-    crop(origin_root+'/'+sort_name[i], 256, 150, 150, '/home/xingyu/Desktop/result/', i)
-    crop(mask_root+'/'+sort_name[i], 256, 150, 150, '/home/xingyu/Desktop/result/', i, 'mask')
+    crop(root+'/'+sort_name[i], 256, 150, 150, '/home/xingyu/Desktop/pics/test/', i)
+    # crop(mask_root+'/'+sort_name[i], 256, 150, 150, '/home/xingyu/Desktop/result/', i, 'mask')

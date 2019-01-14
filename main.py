@@ -7,14 +7,14 @@ import matplotlib.pyplot as plt
 from keras.utils import plot_model
 
 
-# Building Segmentation using U-net-1: 修改了upsampling以及3
-# Building Segmentation using U-net-2: 保持Transpose以及3
-# Building Segmentation using U-net-3: 保持umsampling以及1 输入gray图
-# Building Segmentation using U-net-4: 保持Transpose以及1 输入gray图
-# Building Segmentation using U-net-5: 保持Transpose以及1 输入gray图  数据集是data_2000_ (这里的2000是指1000-2000的数据集)
-# Building Segmentation using U-net-6: 保持Transpose以及1 输入gray图  数据集是data_1000_ 加大batch 30 查看画图保存
-# Building Segmentation using U-net-7: 保持Transpose以及1 输入gray图  数据集是gray_data_1000_ 加大batch 30 查看画图保存
-# Building Segmentation using U-net-8: 保持Transpose以及1 输入gray图  数据集是data_2000_ 加大batch 30 查看画图保存
+
+# gray_data_model_1.hdf5: 保持Transpose以及1 输入gray图  数据集是gray_data_1000.npy batch 30 查看画图保存
+# gray_data_model_2.hdf5: 保持Transpose以及1 输入gray图  数据集是gray_data_1000.npy batch 14 查看画图保存
+# data_mask_2000_model_1.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存
+# TO DO
+# 优化predict.py (可以从数据读取到结果输出不需要手动每次调整)
+# 每个文件有的可以写成变量模式 全部写成变量(不要手动输入)
+# 可视化 每层activation 以及filter
 
 class Main(object):
     def __init__(self, img_rows=256, img_cols=256):
@@ -22,17 +22,17 @@ class Main(object):
         self.img_cols = img_cols
 
     def load_data(self):
-        train_image = np.load("data/data_zjy_.npy")
+        train_image = np.load("data/data_2000_.npy")
         test_image = train_image
-        train_image = train_image[0:60].astype('float') / 255
+        train_image = train_image[0:1800].astype('float') / 255
 
-        train_image_mask = np.load("data/data_mask_zjy_.npy")
+        train_image_mask = np.load("data/data_mask_2000_.npy")
         test_image_mask = train_image_mask
-        train_image_mask = train_image_mask[0:60].astype('float') / 255
+        train_image_mask = train_image_mask[0:1800].astype('float') / 255
 
-        test_image = test_image[55:60].astype('float') / 255
+        test_image = test_image[1800:1810].astype('float') / 255
 
-        test_image_mask = test_image_mask[55:60].astype('float') / 255
+        test_image_mask = test_image_mask[1800:1810].astype('float') / 255
 
         return train_image, train_image_mask, test_image
 
@@ -42,13 +42,13 @@ class Main(object):
         print('-----------Loading data done--------')
         model1 = model.unet()
         # plot_model(model1, to_file='/home/xingyu/Desktop/model.png', show_shapes=True)
-        model_checkpoint = ModelCheckpoint('model/Building Segmentation using U-net-zjy-2.hdf5', monitor='loss', verbose=1, save_best_only=True)
+        model_checkpoint = ModelCheckpoint('model/data_mask_2000_model_1.hdf5', monitor='loss', verbose=1, save_best_only=True)
         print('-----------Fitting Model------------')
         history = model1.fit(
             train_image,
             train_image_mask,
-            batch_size=8,
-            epochs=100,
+            batch_size=4,
+            epochs=50,
             verbose=1,
             validation_split=0.2,
             shuffle=True,
@@ -68,7 +68,7 @@ class Main(object):
         plt.xlabel('epochs')
         plt.ylabel('Loss')
         plt.legend()
-        plt.savefig('plot/model-zjy-2-loss.png')
+        plt.savefig('plot/data_mask_2000_model_1-loss.png')
 
         plt.figure(num=2)
         plt.plot(epochs, acc, 'bo', label='Training acc')
@@ -77,19 +77,19 @@ class Main(object):
         plt.xlabel('epochs')
         plt.ylabel('acc')
         plt.legend()
-        plt.savefig('plot/model-zjy-2-acc.png')
+        plt.savefig('plot/data_mask_2000_model_1-acc.png')
 
         print('-----------Predict test data--------')
         image_mask_test = model1.predict(test_image, batch_size=16, verbose=1)
-        np.save('results/images_mask_test_zjy-2.npy', image_mask_test)
+        np.save('results/data_mask_2000_model_1.npy', image_mask_test)
 
     def save_img(self):
         print('-----------Array to Image--------')
-        imgs = np.load('results/images_mask_test_zjy-2.npy')
+        imgs = np.load('results/data_mask_2000_model_1.npy')
         for i in range(imgs.shape[0]):
             img = imgs[i]
             img = image.array_to_img(img)
-            img.save("results/Building Segmentation using U-net-zjy-2-_%d.jpg" % (i))
+            img.save("results/data_mask_2000_model_1-_%d.jpg" % (i))
 
 
 if __name__ == '__main__':
