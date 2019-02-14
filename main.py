@@ -11,6 +11,8 @@ from skimage import io, data, color
 # gray_data_model_1.hdf5: 保持Transpose以及1 输入gray图  数据集是gray_data_1000.npy batch 30 查看画图保存
 # gray_data_model_2.hdf5: 保持Transpose以及1 输入gray图  数据集是gray_data_1000.npy batch 14 查看画图保存
 # data_mask_2000_model_1.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存
+# data_mask_2000_model_2.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 30 查看画图保存 加入mIoU
+
 # TO DO
 # 优化predict.py (可以从数据读取到结果输出不需要手动每次调整)
 # 每个文件有的可以写成变量模式 全部写成变量(不要手动输入)
@@ -54,7 +56,7 @@ class Main(object):
             verbose=1,
             validation_split=0.2,
             shuffle=True,
-            callbacks=[model_checkpoint]
+            callbacks=[model_checkpoint],
         )
         print('-----------Plotting-----------------')
         acc = history.history['acc']
@@ -106,6 +108,6 @@ class Main(object):
 
 if __name__ == '__main__':
     mynet = Main()
-    output_name = 'data_mask_2000_model_1'
+    output_name = 'data_mask_2000_model_2'
     mynet.train(output_name)
     mynet.save_img(output_name)

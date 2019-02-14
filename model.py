@@ -1,6 +1,24 @@
 from keras import models, layers
 from keras.utils import plot_model
+from MeanIoU import MeanIoU
 import numpy as np
+import keras.backend as K
+
+
+def iou(y_true, y_pred, label:int):
+    y_true = K.cast(K.equal(K.argmax(y_true), label), K.floatx())
+    y_pred = K.cast(K.equal(K.argmax(y_pred), label), K.floatx())
+    intersection = K.sum(y_true * y_pred)
+    union = K.sum(y_true) + K.sum(y_pred) - intersection
+    return K.switch(K.equal(union, 0), 1.0, intersection/union)
+
+
+def mean_iou2(y_true, y_pred):
+    num_labels = K.int_shape(y_pred)[-1] - 1
+    mean_iou = K.variable(0)
+    for label in range(num_labels):
+        mean_iou = mean_iou + iou(y_true, y_pred, label)
+    return mean_iou / num_labels
 
 
 def unet(input_size=(256, 256, 1)):
@@ -133,10 +151,11 @@ def unet(input_size=(256, 256, 1)):
     print('out2 shape:', out2.shape)
 
     model = models.Model(inputs=input1, outputs=out2)
+    miou_metric = MeanIoU(num_classes=1)
     model.compile(
         optimizer='rmsprop',
         loss='binary_crossentropy',
-        metrics=['accuracy']
+        metrics=['accuracy', miou_metric.mean_iou, mean_iou2]
 
     )
     model.summary()
