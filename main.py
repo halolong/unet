@@ -2,7 +2,7 @@ import model
 import numpy as np
 from keras.models import *
 from keras.preprocessing import image
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
 import matplotlib.pyplot as plt
 from keras.utils import plot_model
 from skimage import io, data, color
@@ -11,8 +11,10 @@ from skimage import io, data, color
 # gray_data_model_1.hdf5: 保持Transpose以及1 输入gray图  数据集是gray_data_1000.npy batch 30 查看画图保存
 # gray_data_model_2.hdf5: 保持Transpose以及1 输入gray图  数据集是gray_data_1000.npy batch 14 查看画图保存
 # data_mask_2000_model_1.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存
-# data_mask_2000_model_2.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 30 查看画图保存 加入mIoU
-
+# data_mask_2000_model_2.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 10 查看画图保存 加入mIoU(失败了)
+# data_mask_2000_model_3.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存 加入auto learning rate
+# data_mask_2000_model_4.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存
+# 加入auto learning rate 以及部分dropout(从上升开始)
 # TO DO
 # 优化predict.py (可以从数据读取到结果输出不需要手动每次调整)
 # 每个文件有的可以写成变量模式 全部写成变量(不要手动输入)
@@ -46,17 +48,18 @@ class Main(object):
         print('-----------Loading data done--------')
         model1 = model.unet()
         # plot_model(model1, to_file='/home/xingyu/Desktop/model.png', show_shapes=True)
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, mode='auto')
         model_checkpoint = ModelCheckpoint("model/"+output_name+".hdf5", monitor='loss', verbose=1, save_best_only=True)
         print('-----------Fitting Model------------')
         history = model1.fit(
             train_image,
             train_image_mask,
             batch_size=4,
-            epochs=5,
+            epochs=50,
             verbose=1,
             validation_split=0.2,
             shuffle=True,
-            callbacks=[model_checkpoint],
+            callbacks=[model_checkpoint, reduce_lr],
         )
         print('-----------Plotting-----------------')
         acc = history.history['acc']
@@ -108,6 +111,6 @@ class Main(object):
 
 if __name__ == '__main__':
     mynet = Main()
-    output_name = 'data_mask_2000_model_2'
+    output_name = 'data_mask_2000_model_3'
     mynet.train(output_name)
     mynet.save_img(output_name)

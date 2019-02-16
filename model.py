@@ -89,6 +89,9 @@ def unet(input_size=(256, 256, 1)):
     upconv1 = layers.Conv2DTranspose(64, 3, strides=(2, 2), padding='same', activation='relu')(batch6)
     # upconv1 = layers.Conv2D(64, 3, strides=(2, 2), padding='same', activation='relu')(
     #     layers.UpSampling2D(size=(4, 4))(batch6))
+
+    upconv1 = layers.Dropout(0.5)(upconv1)
+
     print('upCon1 output shape: ', upconv1.shape)
 
     # (8) CONCAT, BN_CONV_RELU * 2, BN_UPCONV_RELU
@@ -101,6 +104,9 @@ def unet(input_size=(256, 256, 1)):
     upconv2 = layers.Conv2DTranspose(64, 3, strides=(2, 2), padding='same', activation='relu')(batch7)
     # upconv2 = layers.Conv2D(64, 3, strides=(2, 2), padding='same', activation='relu')(
     #     layers.UpSampling2D(size=(4, 4))(batch7))
+
+    upconv2 = layers.Dropout(0.5)(upconv2)
+
     print('upCon2 output shape: ', upconv2.shape)
 
     # (9) CONCAT, BN_CONV_RELU * 2, BN_UPCONV_RELU
@@ -113,6 +119,9 @@ def unet(input_size=(256, 256, 1)):
     upconv3 = layers.Conv2DTranspose(64, 3, strides=(2, 2), padding='same', activation='relu')(batch8)
     # upconv3 = layers.Conv2D(64, 3, strides=(2, 2), padding='same', activation='relu')(
     #     layers.UpSampling2D(size=(4, 4))(batch8))
+
+    upconv3 = layers.Dropout(0.5)(upconv3)
+
     print('upCon3 output shape: ', upconv3.shape)
 
     # (10) CONCAT, BN_CONV_RELU * 2, BN_UPCONV_RELU
@@ -125,6 +134,9 @@ def unet(input_size=(256, 256, 1)):
     upconv4 = layers.Conv2DTranspose(64, 3, strides=(2, 2), padding='same', activation='relu')(batch9)
     # upconv4 = layers.Conv2D(64, 3, strides=(2, 2), padding='same', activation='relu')(
     #         layers.UpSampling2D(size=(4, 4))(batch9))
+
+    upconv4 = layers.Dropout(0.5)(upconv4)
+
     print('upCon4 output shape: ', upconv4.shape)
 
     # (11) CONCAT, BN_CONV_RELU * 2, BN_UPCONV_RELU
@@ -137,6 +149,9 @@ def unet(input_size=(256, 256, 1)):
     upconv5 = layers.Conv2DTranspose(64, 3, strides=(2, 2), padding='same', activation='relu')(batch10)
     # upconv5 = layers.Conv2D(64, 3, strides=(2, 2), padding='same', activation='relu')(
     #         layers.UpSampling2D(size=(4, 4))(batch10))
+
+    upconv5 = layers.Dropout(0.5)(upconv5)
+
     print('upCon5 output shape: ', upconv5.shape)
 
     # (12) CONCAT, BN_CONV_RELU * 2, CONVOUT, SIGMOID
@@ -146,17 +161,19 @@ def unet(input_size=(256, 256, 1)):
     batch11 = layers.BatchNormalization(momentum=0.01)(conv12)  # affine
     conv12 = layers.Conv2D(64, 3, strides=(1, 1), padding='same', activation='relu')(batch11)
     out1 = layers.Conv2D(1, 1, strides=(1, 1), padding='same')(conv12)
+
+    out1 = layers.Dropout(0.5)(out1)
+
     print('out1 shape:', out1.shape)
     out2 = layers.Conv2D(1, 1, activation='sigmoid', padding='same')(out1)
     print('out2 shape:', out2.shape)
 
     model = models.Model(inputs=input1, outputs=out2)
-    miou_metric = MeanIoU(num_classes=1)
+    miou_metric = MeanIoU(num_classes=2)
     model.compile(
         optimizer='rmsprop',
         loss='binary_crossentropy',
-        metrics=['accuracy', miou_metric.mean_iou, mean_iou2]
-
+        metrics=['accuracy']
     )
     model.summary()
     return model
