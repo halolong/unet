@@ -111,6 +111,6 @@ class Main(object):
 
 if __name__ == '__main__':
     mynet = Main()
-    output_name = 'data_mask_2000_model_3'
+    output_name = 'data_mask_2000_model_4'
     mynet.train(output_name)
     mynet.save_img(output_name)
