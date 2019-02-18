@@ -15,6 +15,10 @@ from skimage import io, data, color
 # data_mask_2000_model_3.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存 加入auto learning rate
 # data_mask_2000_model_4.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存
 # 加入auto learning rate 以及部分dropout(从上升开始)
+#  data_mask_2000_model_5.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 50 查看画图保存
+# # 加入auto learning rate 以及部分dropout(从上升开始) 加入正确 的f1 score: val 0.5890 patience:5
+#  data_mask_2000_model_6.hdf5: 保持Transpose以及1 输入gray图  数据集是data_mask_2000_.npy batch 200 查看画图保存
+# # 加入auto learning rate 以及部分dropout(从上升开始) 加入正确 的f1 score patience: 50
 # TO DO
 # 优化predict.py (可以从数据读取到结果输出不需要手动每次调整)
 # 每个文件有的可以写成变量模式 全部写成变量(不要手动输入)
@@ -48,14 +52,14 @@ class Main(object):
         print('-----------Loading data done--------')
         model1 = model.unet()
         # plot_model(model1, to_file='/home/xingyu/Desktop/model.png', show_shapes=True)
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=5, mode='auto')
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=50, mode='auto')
         model_checkpoint = ModelCheckpoint("model/"+output_name+".hdf5", monitor='loss', verbose=1, save_best_only=True)
         print('-----------Fitting Model------------')
         history = model1.fit(
             train_image,
             train_image_mask,
             batch_size=4,
-            epochs=50,
+            epochs=200,
             verbose=1,
             validation_split=0.2,
             shuffle=True,
@@ -111,6 +115,6 @@ class Main(object):
 
 if __name__ == '__main__':
     mynet = Main()
-    output_name = 'data_mask_2000_model_4'
+    output_name = 'data_mask_2000_model_6'
     mynet.train(output_name)
     mynet.save_img(output_name)

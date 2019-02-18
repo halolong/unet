@@ -3,7 +3,7 @@ from keras.utils import plot_model
 from MeanIoU import MeanIoU
 import numpy as np
 import keras.backend as K
-
+import keras_metrics
 
 def iou(y_true, y_pred, label:int):
     y_true = K.cast(K.equal(K.argmax(y_true), label), K.floatx())
@@ -20,6 +20,33 @@ def mean_iou2(y_true, y_pred):
         mean_iou = mean_iou + iou(y_true, y_pred, label)
     return mean_iou / num_labels
 
+
+def DSC(y_true, y_pred):
+    y_true = K.flatten(y_true)
+    y_pred = K.flatten(y_pred)
+
+    threshold_value = 0.3
+
+    y_pred = K.cast(K.greater(y_pred, threshold_value), K.floatx())
+    fenzi = 2 * K.sum(y_true * y_pred, keepdims=True)
+
+    fenmu = K.sum(y_true, keepdims=True) + K.sum(y_pred, keepdims=True)
+
+    return K.mean(fenzi / fenmu, axis=-1)
+
+
+def JI(y_true, y_pred):
+    y_true = K.flatten(y_true)
+    y_pred = K.flatten(y_pred)
+
+    threshold_value = 0.3
+
+    y_pred = K.cast(K.greater(y_pred, threshold_value), K.floatx())
+    fenzi = K.sum(y_true * y_pred, keepdims=True)
+    # true_positives_sum = K.sum(true_positives, keepdims=True)
+    fenmu = K.sum(K.cast((K.greater(y_true + y_pred, 0.8)), K.floatx()), keepdims=True)
+
+    return K.mean(fenzi / fenmu, axis=-1)
 
 def unet(input_size=(256, 256, 1)):
     input1 = layers.Input(input_size)
@@ -169,11 +196,11 @@ def unet(input_size=(256, 256, 1)):
     print('out2 shape:', out2.shape)
 
     model = models.Model(inputs=input1, outputs=out2)
-    miou_metric = MeanIoU(num_classes=2)
+#    miou_metric = MeanIoU(num_classes=2)
     model.compile(
         optimizer='rmsprop',
         loss='binary_crossentropy',
-        metrics=['accuracy']
+        metrics=['accuracy', keras_metrics.recall(), keras_metrics.precision(), keras_metrics.f1_score()]
     )
     model.summary()
     return model
